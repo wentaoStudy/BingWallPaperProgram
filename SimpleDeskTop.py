@@ -1,15 +1,16 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-03-17 23:05:39
+@LastEditTime: 2020-03-18 00:24:15
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
-from PyQt5.QtWidgets import QWidget , QApplication , QPushButton , QLabel , QVBoxLayout , QScrollArea , QFrame
+from PyQt5.QtWidgets import QWidget , QApplication , QLabel , QVBoxLayout , QScrollArea , QFrame
 from PyQt5.QtGui import QPixmap 
 from PyQt5.QtCore import *
 import sys , os
 import SetPaper
+from datetime import datetime , timedelta
 
 
 class picLabel(QLabel):
@@ -31,17 +32,26 @@ class BingPaperDesktop(QWidget):
         super(BingPaperDesktop , self).__init__()
         self.initUi()
 
+    def picPassTime(path):
+        pass
+
     def initUi(self):
         self.setWindowTitle("Bing壁纸")
         self.vBoxLayout = QVBoxLayout()
         imageFiles = os.listdir("images")
         self.pictureLabelList = []
+        now = datetime.now()
+        sevenDaysAgo = (now - timedelta(days=7)).timestamp()
         for dir in imageFiles:
             if not os.path.isdir('images//' + dir):
                 labelTemp = picLabel()
                 labelTemp.setObjectName('images//' + dir)
-                labelTemp.setPixmap(QPixmap('images//' + dir).scaled(QSize(320 , 180)))
-                self.pictureLabelList.append(labelTemp)
+                imageTime = (os.path.getmtime('images//' + dir))
+                if imageTime < sevenDaysAgo:
+                    os.remove('images//' + dir)
+                else:
+                    labelTemp.setPixmap(QPixmap('images//' + dir).scaled(QSize(320 , 180)))
+                    self.pictureLabelList.append(labelTemp)
         for label in self.pictureLabelList:
             self.vBoxLayout.addWidget(label)
 
@@ -52,6 +62,7 @@ class BingPaperDesktop(QWidget):
         
         layout = QVBoxLayout()
         layout.addWidget(scroll)
+        
         self.setLayout(layout)
         
     def labelClicked(self):
@@ -63,8 +74,8 @@ class BingPaperDesktop(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
+    window.resize(380,360)
     window.show()
     sys.exit(app.exec_())
 
                 
-
