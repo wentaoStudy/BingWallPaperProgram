@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-03-18 00:24:15
+@LastEditTime: 2020-03-18 00:44:30
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -9,8 +9,9 @@ from PyQt5.QtWidgets import QWidget , QApplication , QLabel , QVBoxLayout , QScr
 from PyQt5.QtGui import QPixmap 
 from PyQt5.QtCore import *
 import sys , os
-import SetPaper
+import SetPaper , GetPaper
 from datetime import datetime , timedelta
+from multiprocessing import Process
 
 
 class picLabel(QLabel):
@@ -76,6 +77,9 @@ if __name__ == "__main__":
     window = BingPaperDesktop()
     window.resize(380,360)
     window.show()
+    downProcess = Process(target=GetPaper.getPaper )
+    downProcess.start()
+    downProcess.join()
     sys.exit(app.exec_())
 
                 
