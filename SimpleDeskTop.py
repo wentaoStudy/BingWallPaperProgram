@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-03-18 00:44:30
+@LastEditTime: 2020-03-18 13:34:54
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -75,11 +75,11 @@ class BingPaperDesktop(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
-    window.resize(380,360)
+    window.resize(400,360)
     window.show()
-    downProcess = Process(target=GetPaper.getPaper )
-    downProcess.start()
-    downProcess.join()
+    # downProcess = Process(target=GetPaper.getPaper )
+    # downProcess.start()
+    # downProcess.join()
     sys.exit(app.exec_())
 
                 
