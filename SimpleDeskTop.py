@@ -1,14 +1,14 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-03-22 11:54:00
+@LastEditTime: 2020-03-22 16:58:31
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
 from PyQt5.QtWidgets import QWidget , QApplication , QLabel , QVBoxLayout , QScrollArea , QFrame
 from PyQt5.QtGui import QPixmap 
 from PyQt5.QtCore import *
-import sys , os
+import sys , os ,time
 import SetPaper , GetPaper
 from datetime import datetime , timedelta
 from multiprocessing import Process
@@ -18,7 +18,23 @@ class DownThread(QThread):
         super(DownThread , self).__init__()
 
     def run(self):
-        GetPaper.getPaper()
+        while True:
+            time.sleep(1800)
+            if self.detectedIfDownload():
+                GetPaper.getPaper()
+        
+    def detectedIfDownload(self):
+        ifDownload = True
+        now = datetime.now()
+        toDay = datetime(now.year , now.month , now.day , 0 , 0 , 0 ,0).timestamp()
+        imageFiles = os.listdir("images")
+        for dir in imageFiles:
+            if not os.path.isdir('images//' + dir):
+                imageTime = (os.path.getmtime('images//' + dir))
+                if imageTime - toDay > 0 :
+                    ifDownload = False
+        return ifDownload
+                
 
 
 class PicLabel(QLabel):
