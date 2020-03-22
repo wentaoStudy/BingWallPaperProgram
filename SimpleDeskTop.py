@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-03-18 13:34:54
+@LastEditTime: 2020-03-22 11:54:00
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -13,10 +13,17 @@ import SetPaper , GetPaper
 from datetime import datetime , timedelta
 from multiprocessing import Process
 
+class DownThread(QThread):
+    def __init__(self):
+        super(DownThread , self).__init__()
 
-class picLabel(QLabel):
+    def run(self):
+        GetPaper.getPaper()
+
+
+class PicLabel(QLabel):
     def __init__(self , parent = None):
-        super(picLabel , self).__init__(parent)
+        super(PicLabel , self).__init__(parent)
 
     def mousePressEvent(self , e):
         super().mousePressEvent(e)
@@ -45,7 +52,7 @@ class BingPaperDesktop(QWidget):
         sevenDaysAgo = (now - timedelta(days=7)).timestamp()
         for dir in imageFiles:
             if not os.path.isdir('images//' + dir):
-                labelTemp = picLabel()
+                labelTemp = PicLabel()
                 labelTemp.setObjectName('images//' + dir)
                 imageTime = (os.path.getmtime('images//' + dir))
                 if imageTime < sevenDaysAgo:
@@ -71,15 +78,15 @@ class BingPaperDesktop(QWidget):
         SetPaper.setWallPaper(label.objectName)
         print(label.objectName)
 
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
     window.resize(400,360)
     window.show()
-    # downProcess = Process(target=GetPaper.getPaper )
-    # downProcess.start()
-    # downProcess.join()
+    
+    downThread = DownThread()
+    downThread.start()
     sys.exit(app.exec_())
+
 
                 
