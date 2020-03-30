@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 09:44:32
-@LastEditTime: 2020-03-18 00:35:57
+@LastEditTime: 2020-03-30 11:25:51
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -35,8 +35,8 @@ def spiderPic(html):
 def getPaper():
     print("现在时间："+time.asctime(time.localtime(time.time())) + ",为您下载今日Bing壁纸")
     try:
-        # result = requests.get('https://cn.bing.com/')
-        result = requests.get('https://cn.bing.com/?FORM=BEHPTB&ensearch=1')   #英文版网站的壁纸
+        result = requests.get('https://cn.bing.com/')
+        # result = requests.get('https://cn.bing.com/?FORM=BEHPTB&ensearch=1')   #英文版网站的壁纸
         spiderPic(result.text)
     except Exception:
         print(Exception)

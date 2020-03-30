@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-03-22 16:58:31
+@LastEditTime: 2020-03-30 11:50:12
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -14,14 +14,19 @@ from datetime import datetime , timedelta
 from multiprocessing import Process
 
 class DownThread(QThread):
+    end = pyqtSignal()
     def __init__(self):
         super(DownThread , self).__init__()
 
     def run(self):
         while True:
-            time.sleep(1800)
-            if self.detectedIfDownload():
+            ifDown = self.detectedIfDownload()
+            print(ifDown)
+            if not ifDown:
                 GetPaper.getPaper()
+                self.end.emit()
+            time.sleep(1800)
+        
         
     def detectedIfDownload(self):
         ifDownload = True
@@ -55,6 +60,9 @@ class BingPaperDesktop(QWidget):
     def __init__(self):
         super(BingPaperDesktop , self).__init__()
         self.initUi()
+        self.downloadThread = DownThread()
+        self.downloadThread.start()
+        self.downloadThread.end.connect(self.end)
 
     def picPassTime(path):
         pass
@@ -80,9 +88,9 @@ class BingPaperDesktop(QWidget):
             self.vBoxLayout.addWidget(label)
 
         scroll = QScrollArea()
-        frame = QFrame(scroll)
-        frame.setLayout(self.vBoxLayout)
-        scroll.setWidget(frame)
+        self.frame = QFrame(scroll)
+        self.frame.setLayout(self.vBoxLayout)
+        scroll.setWidget(self.frame)
         
         layout = QVBoxLayout()
         layout.addWidget(scroll)
@@ -94,14 +102,37 @@ class BingPaperDesktop(QWidget):
         SetPaper.setWallPaper(label.objectName)
         print(label.objectName)
 
+    def end(self):
+
+        for label in self.pictureLabelList:
+            self.vBoxLayout.removeWidget(label)
+
+        imageFiles = os.listdir("images")
+        self.pictureLabelList = []
+        now = datetime.now()
+        sevenDaysAgo = (now - timedelta(days=1)).timestamp()
+        toDay = datetime(now.year , now.month , now.day , 0 , 0 , 0 ,0).timestamp()
+        for dir in imageFiles:
+            if not os.path.isdir('images//' + dir):
+                labelTemp = PicLabel()
+                labelTemp.setObjectName('images//' + dir)
+                imageTime = (os.path.getmtime('images//' + dir))
+                if imageTime < sevenDaysAgo:
+                    os.remove('images//' + dir)
+                elif imageTime - toDay > 0 :
+                    print(toDay , imageTime)
+                    labelTemp.setPixmap(QPixmap('images//' + dir).scaled(QSize(320 , 180)))
+                    self.pictureLabelList.append(labelTemp)
+
+        # self.vBoxLayout.setGeometry(QRect(self.vBoxLayout.geometry().x() ,self.vBoxLayout.geometry().y() , self.vBoxLayout.geometry().width() , self.vBoxLayout.geometry().height() + 180 ))
+        for label in self.pictureLabelList:
+            self.vBoxLayout.addWidget(label)
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
     window.resize(400,360)
     window.show()
-    
-    downThread = DownThread()
-    downThread.start()
     sys.exit(app.exec_())
 
 
