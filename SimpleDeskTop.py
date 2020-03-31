@@ -1,12 +1,12 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-03-30 11:50:12
+@LastEditTime: 2020-03-31 10:39:25
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
-from PyQt5.QtWidgets import QWidget , QApplication , QLabel , QVBoxLayout , QScrollArea , QFrame
-from PyQt5.QtGui import QPixmap 
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import * 
 from PyQt5.QtCore import *
 import sys , os ,time
 import SetPaper , GetPaper
@@ -39,8 +39,6 @@ class DownThread(QThread):
                 if imageTime - toDay > 0 :
                     ifDownload = False
         return ifDownload
-                
-
 
 class PicLabel(QLabel):
     def __init__(self , parent = None):
@@ -95,6 +93,23 @@ class BingPaperDesktop(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(scroll)
         
+        #系统右下角图标
+        tryIcon = QSystemTrayIcon(self)
+        tryIcon.setIcon(QIcon("python.png"))
+        menu = QMenu()
+        tryIconQuit = QAction("退出",self)
+        tryIconQuit.triggered.connect(self.tryIconQuitClicked)
+        menu.addAction(tryIconQuit)
+        tryIconHide = QAction("隐藏" ,self)
+        tryIconHide.triggered.connect(self.tryIconMainWindowHide)
+        menu.addAction(tryIconHide)
+        tryIconShow = QAction("显示" ,self)
+        tryIconShow.triggered.connect(self.tryIconMainWindowShow)
+        menu.addAction(tryIconShow)
+        tryIcon.setContextMenu(menu)
+        tryIcon.activated.connect(self.tryIconMainWindowShow)
+        tryIcon.show()
+
         self.setLayout(layout)
         
     def labelClicked(self):
@@ -128,6 +143,22 @@ class BingPaperDesktop(QWidget):
         for label in self.pictureLabelList:
             self.vBoxLayout.addWidget(label)
 
+    def tryIconQuitClicked(self):
+        sys.exit(app.exec_())
+
+    def tryIconMainWindowHide(self):
+        self.setVisible(False)
+    
+    def tryIconMainWindowShow(self):
+        self.setVisible(True)
+
+    #重写系统关闭窗口事件，让关闭窗口变成隐藏窗口
+    def closeEvent(self, event):
+        event.ignore()
+        self.tryIconMainWindowHide()
+
+        
+    
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
