@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-04-06 15:55:41
+@LastEditTime: 2020-04-08 09:09:31
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -161,9 +161,18 @@ class BingPaperDesktop(QWidget):
         event.ignore()
         self.tryIconMainWindowHide()
 
-        
+def judgeAndCreateDir():
+    baseDir = os.getcwd()
+    ifDirExist = os.path.exists("images")
+    if not ifDirExist:
+        os.mkdir("images")
+
+#对整个系统进行初始化
+def systemInit():
+    judgeAndCreateDir()
     
 if __name__ == "__main__":
+    systemInit()
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
     window.resize(400,360)
