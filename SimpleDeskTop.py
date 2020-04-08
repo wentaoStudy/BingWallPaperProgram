@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-03-31 10:39:25
+@LastEditTime: 2020-04-06 15:55:41
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -22,7 +22,7 @@ class DownThread(QThread):
         while True:
             ifDown = self.detectedIfDownload()
             print(ifDown)
-            if not ifDown:
+            if ifDown:
                 GetPaper.getPaper()
                 self.end.emit()
             time.sleep(1800)
@@ -86,6 +86,7 @@ class BingPaperDesktop(QWidget):
             self.vBoxLayout.addWidget(label)
 
         scroll = QScrollArea()
+        scroll.setWidgetResizable = True
         self.frame = QFrame(scroll)
         self.frame.setLayout(self.vBoxLayout)
         scroll.setWidget(self.frame)
@@ -107,8 +108,11 @@ class BingPaperDesktop(QWidget):
         tryIconShow.triggered.connect(self.tryIconMainWindowShow)
         menu.addAction(tryIconShow)
         tryIcon.setContextMenu(menu)
-        tryIcon.activated.connect(self.tryIconMainWindowShow)
+        # tryIcon.activated.connect(self.tryIconMainWindowShow)
         tryIcon.show()
+
+        #系统图标
+        self.setWindowIcon(QIcon("python.png"))
 
         self.setLayout(layout)
         
@@ -125,7 +129,7 @@ class BingPaperDesktop(QWidget):
         imageFiles = os.listdir("images")
         self.pictureLabelList = []
         now = datetime.now()
-        sevenDaysAgo = (now - timedelta(days=1)).timestamp()
+        sevenDaysAgo = (now - timedelta(days=7)).timestamp()
         toDay = datetime(now.year , now.month , now.day , 0 , 0 , 0 ,0).timestamp()
         for dir in imageFiles:
             if not os.path.isdir('images//' + dir):
@@ -138,11 +142,11 @@ class BingPaperDesktop(QWidget):
                     print(toDay , imageTime)
                     labelTemp.setPixmap(QPixmap('images//' + dir).scaled(QSize(320 , 180)))
                     self.pictureLabelList.append(labelTemp)
-
+        self.vBoxLayout = QVBoxLayout()
         # self.vBoxLayout.setGeometry(QRect(self.vBoxLayout.geometry().x() ,self.vBoxLayout.geometry().y() , self.vBoxLayout.geometry().width() , self.vBoxLayout.geometry().height() + 180 ))
         for label in self.pictureLabelList:
             self.vBoxLayout.addWidget(label)
-
+            
     def tryIconQuitClicked(self):
         sys.exit(app.exec_())
 
