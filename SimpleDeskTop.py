@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-04-08 09:09:31
+@LastEditTime: 2020-04-11 11:22:43
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -12,7 +12,16 @@ import sys , os ,time
 import SetPaper , GetPaper
 from datetime import datetime , timedelta
 from multiprocessing import Process
+import chardet
 
+
+#这里定义存放图片的文件夹名称，
+#如果需要修改的话baseImageDir中的文件夹名称
+#需要和baseImageDirName中的一致
+baseImageDir = 'images//'
+baseImageDirName = 'images'
+
+#这里定义的是用来判断是否需要下载今天的Bing图片的线程
 class DownThread(QThread):
     end = pyqtSignal()
     def __init__(self):
@@ -32,10 +41,10 @@ class DownThread(QThread):
         ifDownload = True
         now = datetime.now()
         toDay = datetime(now.year , now.month , now.day , 0 , 0 , 0 ,0).timestamp()
-        imageFiles = os.listdir("images")
+        imageFiles = os.listdir(baseImageDirName)
         for dir in imageFiles:
-            if not os.path.isdir('images//' + dir):
-                imageTime = (os.path.getmtime('images//' + dir))
+            if not os.path.isdir(baseImageDir + dir):
+                imageTime = (os.path.getmtime(baseImageDir + dir))
                 if imageTime - toDay > 0 :
                     ifDownload = False
         return ifDownload
@@ -50,14 +59,11 @@ class PicLabel(QLabel):
         SetPaper.setWallPaper(str(self.objectName()))
         print("鼠标单击")
 
-    # def mouseReleaseEvent(self , QMouseEvent):
-    #     SetPaper.setWallPaper(label.objectName)
-    #     print("鼠标单击")
-
 class BingPaperDesktop(QWidget):
     def __init__(self):
         super(BingPaperDesktop , self).__init__()
         self.initUi()
+        self.tryIcon()
         self.downloadThread = DownThread()
         self.downloadThread.start()
         self.downloadThread.end.connect(self.end)
@@ -67,34 +73,44 @@ class BingPaperDesktop(QWidget):
 
     def initUi(self):
         self.setWindowTitle("Bing壁纸")
+        #系统图标
+        self.setWindowIcon(QIcon("python.png"))
+
         self.vBoxLayout = QVBoxLayout()
-        imageFiles = os.listdir("images")
+        imageFiles = os.listdir(baseImageDirName)
         self.pictureLabelList = []
         now = datetime.now()
         sevenDaysAgo = (now - timedelta(days=7)).timestamp()
         for dir in imageFiles:
-            if not os.path.isdir('images//' + dir):
+            if not os.path.isdir(baseImageDir + dir):
                 labelTemp = PicLabel()
-                labelTemp.setObjectName('images//' + dir)
-                imageTime = (os.path.getmtime('images//' + dir))
+                labelTemp.setObjectName(baseImageDir + dir)
+                imageTime = (os.path.getmtime(baseImageDir + dir))
                 if imageTime < sevenDaysAgo:
-                    os.remove('images//' + dir)
+                    os.remove(baseImageDir + dir)
                 else:
-                    labelTemp.setPixmap(QPixmap('images//' + dir).scaled(QSize(320 , 180)))
+                    labelTemp.setPixmap(QPixmap(baseImageDir + dir).scaled(QSize(320 , 180)))
                     self.pictureLabelList.append(labelTemp)
         for label in self.pictureLabelList:
             self.vBoxLayout.addWidget(label)
-
+        # self.vBoxLayout.addWidget(QPushButton("添加内容测试"))
         scroll = QScrollArea()
-        scroll.setWidgetResizable = True
         self.frame = QFrame(scroll)
         self.frame.setLayout(self.vBoxLayout)
         scroll.setWidget(self.frame)
-        
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setScrollBar(scroll)
         layout = QVBoxLayout()
         layout.addWidget(scroll)
-        
-        #系统右下角图标
+        self.setLayout(layout)
+        # layout = QVBoxLayout()
+        # layout.addWidget(scroll)
+        # self.setLayout(layout)
+
+    #系统右下角图标
+    def tryIcon(self):
         tryIcon = QSystemTrayIcon(self)
         tryIcon.setIcon(QIcon("python.png"))
         menu = QMenu()
@@ -111,11 +127,13 @@ class BingPaperDesktop(QWidget):
         # tryIcon.activated.connect(self.tryIconMainWindowShow)
         tryIcon.show()
 
-        #系统图标
-        self.setWindowIcon(QIcon("python.png"))
+    def setScrollBar(self , widget):
+        with open("Data/ScrollBar.qss", "rb") as fp:
+            content = fp.read()
+            encoding = chardet.detect(content) or {}
+            content = content.decode(encoding.get("encoding") or "utf-8")
+        widget.setStyleSheet(content)
 
-        self.setLayout(layout)
-        
     def labelClicked(self):
         label = self.sender()
         SetPaper.setWallPaper(label.objectName)
@@ -132,17 +150,16 @@ class BingPaperDesktop(QWidget):
         sevenDaysAgo = (now - timedelta(days=7)).timestamp()
         toDay = datetime(now.year , now.month , now.day , 0 , 0 , 0 ,0).timestamp()
         for dir in imageFiles:
-            if not os.path.isdir('images//' + dir):
+            if not os.path.isdir(baseImageDir + dir):
                 labelTemp = PicLabel()
-                labelTemp.setObjectName('images//' + dir)
-                imageTime = (os.path.getmtime('images//' + dir))
+                labelTemp.setObjectName(baseImageDir + dir)
+                imageTime = (os.path.getmtime(baseImageDir + dir))
                 if imageTime < sevenDaysAgo:
-                    os.remove('images//' + dir)
+                    os.remove(baseImageDir + dir)
                 elif imageTime - toDay > 0 :
                     print(toDay , imageTime)
-                    labelTemp.setPixmap(QPixmap('images//' + dir).scaled(QSize(320 , 180)))
+                    labelTemp.setPixmap(QPixmap(baseImageDir + dir).scaled(QSize(320 , 180)))
                     self.pictureLabelList.append(labelTemp)
-        self.vBoxLayout = QVBoxLayout()
         # self.vBoxLayout.setGeometry(QRect(self.vBoxLayout.geometry().x() ,self.vBoxLayout.geometry().y() , self.vBoxLayout.geometry().width() , self.vBoxLayout.geometry().height() + 180 ))
         for label in self.pictureLabelList:
             self.vBoxLayout.addWidget(label)
@@ -175,7 +192,6 @@ if __name__ == "__main__":
     systemInit()
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
-    window.resize(400,360)
     window.show()
     sys.exit(app.exec_())
 
