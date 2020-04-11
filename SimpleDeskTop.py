@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-04-11 11:22:43
+@LastEditTime: 2020-04-11 14:36:49
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -36,7 +36,6 @@ class DownThread(QThread):
                 self.end.emit()
             time.sleep(1800)
         
-        
     def detectedIfDownload(self):
         ifDownload = True
         now = datetime.now()
@@ -49,6 +48,7 @@ class DownThread(QThread):
                     ifDownload = False
         return ifDownload
 
+#重写QLabel，使其具有点击设置壁纸的功能
 class PicLabel(QLabel):
     def __init__(self , parent = None):
         super(PicLabel , self).__init__(parent)
@@ -64,12 +64,7 @@ class BingPaperDesktop(QWidget):
         super(BingPaperDesktop , self).__init__()
         self.initUi()
         self.tryIcon()
-        self.downloadThread = DownThread()
-        self.downloadThread.start()
-        self.downloadThread.end.connect(self.end)
-
-    def picPassTime(path):
-        pass
+        self.createDownLoadThread()
 
     def initUi(self):
         self.setWindowTitle("Bing壁纸")
@@ -93,21 +88,23 @@ class BingPaperDesktop(QWidget):
                     self.pictureLabelList.append(labelTemp)
         for label in self.pictureLabelList:
             self.vBoxLayout.addWidget(label)
-        # self.vBoxLayout.addWidget(QPushButton("添加内容测试"))
         scroll = QScrollArea()
         self.frame = QFrame(scroll)
         self.frame.setLayout(self.vBoxLayout)
         scroll.setWidget(self.frame)
+        #将scroll设置成没有边框
         scroll.setFrameShape(QFrame.NoFrame)
+        #将scroll设置成横向没有scrollbar
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setScrollBar(scroll)
+        #为scrollbar设置style属性
+        self.setScrollBarStyle(scroll)
         layout = QVBoxLayout()
         layout.addWidget(scroll)
+        #为layout设置margins
+        layout.setContentsMargins(QMargins(0 ,0,0,0))
+        self.vBoxLayout.setContentsMargins(QMargins(0 ,0,0,0))
+        self.frame.setContentsMargins(QMargins(5,5,5,5))
         self.setLayout(layout)
-        # layout = QVBoxLayout()
-        # layout.addWidget(scroll)
-        # self.setLayout(layout)
 
     #系统右下角图标
     def tryIcon(self):
@@ -127,19 +124,22 @@ class BingPaperDesktop(QWidget):
         # tryIcon.activated.connect(self.tryIconMainWindowShow)
         tryIcon.show()
 
-    def setScrollBar(self , widget):
+    #创建用于下载图片的线程
+    def createDownLoadThread(self):
+        self.downloadThread = DownThread()
+        self.downloadThread.start()
+        self.downloadThread.end.connect(self.downloadEnd)
+
+    #为控件设置ScrollBar属性
+    def setScrollBarStyle(self , widget):
         with open("Data/ScrollBar.qss", "rb") as fp:
             content = fp.read()
             encoding = chardet.detect(content) or {}
             content = content.decode(encoding.get("encoding") or "utf-8")
         widget.setStyleSheet(content)
 
-    def labelClicked(self):
-        label = self.sender()
-        SetPaper.setWallPaper(label.objectName)
-        print(label.objectName)
-
-    def end(self):
+    #当图片下载完毕会发生的事情
+    def downloadEnd(self):
 
         for label in self.pictureLabelList:
             self.vBoxLayout.removeWidget(label)
@@ -173,10 +173,10 @@ class BingPaperDesktop(QWidget):
     def tryIconMainWindowShow(self):
         self.setVisible(True)
 
-    #重写系统关闭窗口事件，让关闭窗口变成隐藏窗口
-    def closeEvent(self, event):
-        event.ignore()
-        self.tryIconMainWindowHide()
+    # #重写系统关闭窗口事件，让关闭窗口变成隐藏窗口
+    # def closeEvent(self, event):
+    #     event.ignore()
+    #     self.tryIconMainWindowHide()
 
 def judgeAndCreateDir():
     baseDir = os.getcwd()
