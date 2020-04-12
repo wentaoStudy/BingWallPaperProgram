@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-04-11 14:36:49
+@LastEditTime: 2020-04-11 18:04:05
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -144,7 +144,7 @@ class BingPaperDesktop(QWidget):
         for label in self.pictureLabelList:
             self.vBoxLayout.removeWidget(label)
 
-        imageFiles = os.listdir("images")
+        imageFiles = os.listdir(baseImageDirName)
         self.pictureLabelList = []
         now = datetime.now()
         sevenDaysAgo = (now - timedelta(days=7)).timestamp()
@@ -161,6 +161,7 @@ class BingPaperDesktop(QWidget):
                     labelTemp.setPixmap(QPixmap(baseImageDir + dir).scaled(QSize(320 , 180)))
                     self.pictureLabelList.append(labelTemp)
         # self.vBoxLayout.setGeometry(QRect(self.vBoxLayout.geometry().x() ,self.vBoxLayout.geometry().y() , self.vBoxLayout.geometry().width() , self.vBoxLayout.geometry().height() + 180 ))
+        self.vBoxLayout.addStretch(180)
         for label in self.pictureLabelList:
             self.vBoxLayout.addWidget(label)
             
@@ -180,9 +181,9 @@ class BingPaperDesktop(QWidget):
 
 def judgeAndCreateDir():
     baseDir = os.getcwd()
-    ifDirExist = os.path.exists("images")
+    ifDirExist = os.path.exists(baseImageDirName)
     if not ifDirExist:
-        os.mkdir("images")
+        os.mkdir(baseImageDirName)
 
 #对整个系统进行初始化
 def systemInit():
