@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-04-11 18:04:05
+@LastEditTime: 2020-05-14 11:46:44
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -175,9 +175,9 @@ class BingPaperDesktop(QWidget):
         self.setVisible(True)
 
     # #重写系统关闭窗口事件，让关闭窗口变成隐藏窗口
-    # def closeEvent(self, event):
-    #     event.ignore()
-    #     self.tryIconMainWindowHide()
+    def closeEvent(self, event):
+        event.ignore()
+        self.tryIconMainWindowHide()
 
 def judgeAndCreateDir():
     baseDir = os.getcwd()
