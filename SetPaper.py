@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 22:07:49
-@LastEditTime: 2020-04-11 14:55:06
+@LastEditTime: 2020-06-14 08:45:06
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -36,5 +36,6 @@ def setWallPaper(filePath):
     elif(sysstr == "Linux"):
         pass
     else:
-        address = os.getcwd() + "/" + WindowsSetWallPaper(filePath) 
+        address = os.getcwd() + "/" + (filePath) 
+        print(address)
         os.system("osascript -e \"tell application \\\"Finder\\\" to set desktop picture to POSIX file \\\"" + address + "\\\"\"")
