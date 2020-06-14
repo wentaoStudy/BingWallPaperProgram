@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-06-14 07:49:12
+@LastEditTime: 2020-06-14 09:12:20
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -13,6 +13,7 @@ import SetPaper , GetPaper
 from datetime import datetime , timedelta
 from multiprocessing import Process
 import chardet
+import re
 
 
 #这里定义存放图片的文件夹名称，
@@ -43,8 +44,15 @@ class DownThread(QThread):
         imageFiles = os.listdir(baseImageDirName)
         for dir in imageFiles:
             if not os.path.isdir(baseImageDir + dir):
-                imageTime = (os.path.getmtime(baseImageDir + dir))
-                if imageTime - toDay > 0 :
+                time_list = dir.split("_")
+                try:
+                    print(time_list)
+                    imageTime = datetime(int(time_list[2]) , int(time_list[3]) , int((time_list[4]).split(".")[0]), 0 , 0 , 0 ,0).timestamp()
+                    print(imageTime)
+                except:
+                    imageTime = toDay
+                # imageTime = (os.path.getmtime(baseImageDir + dir))
+                if imageTime - toDay >= 0 :
                     ifDownload = False
         return ifDownload
 
