@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-06-14 09:12:20
+@LastEditTime: 2020-06-15 23:36:54
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -36,7 +36,8 @@ class DownThread(QThread):
                 GetPaper.getPaper()
                 self.end.emit()
             time.sleep(1800)
-        
+    
+    #判断是否需要下载图片
     def detectedIfDownload(self):
         ifDownload = True
         now = datetime.now()
@@ -56,6 +57,18 @@ class DownThread(QThread):
                     ifDownload = False
         return ifDownload
 
+#返回图片是多少天前获取的，例如今天获取的返回0昨天获取的返回1 , 输入值为地址串
+def getImageOverNowTime(string_path):
+    #依据文件时间进行判断的方法 ：os.path.getmtime(path)
+    #依据文件名进行判断的方式，如果依据文件时间进行判断会出现问题
+    time_list = string_path.split("_")
+    now = datetime.now()
+    try:
+        timeDelta = datetime(now.year , now.month , now.day , 0 , 0 , 0 ,0) - datetime(int(time_list[2]) , int(time_list[3]) , int((time_list[4]).split(".")[0]), 0 , 0 , 0 ,0)
+        return timeDelta.days
+    except:
+        return -1
+        
 #重写QLabel，使其具有点击设置壁纸的功能
 class PicLabel(QLabel):
     def __init__(self , parent = None):
@@ -67,9 +80,44 @@ class PicLabel(QLabel):
         SetPaper.setWallPaper(str(self.objectName()))
         print("鼠标单击")
 
+class ListView(QListView):
+
+    def __init__(self, *args, **kwargs):
+        super(ListView, self).__init__(*args, **kwargs)
+        # 模型
+        self._model = QStandardItemModel(self)
+        self.setModel(self._model)
+        self.setContentsMargins(QMargins(0 ,0,0,0))
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.initUi()
+
+    def initUi(self):
+        imageFiles = os.listdir(baseImageDirName)
+        self.pictureLabelList = []
+        for dir in imageFiles:
+            if not os.path.isdir(baseImageDir + dir):
+                if getImageOverNowTime(dir) > 7:
+                    os.remove(baseImageDir + dir)
+                else:
+                    labelTemp = PicLabel()
+                    labelTemp.setObjectName(baseImageDir + dir)
+                    labelTemp.setPixmap(QPixmap(baseImageDir + dir).scaled(QSize(320 , 180)))
+                    self.pictureLabelList.append(labelTemp)
+        for label in self.pictureLabelList:
+            item = QStandardItem()
+            self._model.appendRow(item)  # 添加item
+
+            # 得到索引
+            index = self._model.indexFromItem(item)
+            widget = label
+            item.setSizeHint(QSize(320,180))  # 主要是调整item的高度
+            # 设置自定义的widget
+            self.setIndexWidget(index, widget)
+
 class BingPaperDesktop(QWidget):
     def __init__(self):
         super(BingPaperDesktop , self).__init__()
+        self.listPictureView = ListView()
         self.initUi()
         self.tryIcon()
         self.createDownLoadThread()
@@ -78,40 +126,11 @@ class BingPaperDesktop(QWidget):
         self.setWindowTitle("Bing壁纸")
         #系统图标
         self.setWindowIcon(QIcon("python.png"))
-
-        self.vBoxLayout = QVBoxLayout()
-        imageFiles = os.listdir(baseImageDirName)
-        self.pictureLabelList = []
-        now = datetime.now()
-        sevenDaysAgo = (now - timedelta(days=7)).timestamp()
-        for dir in imageFiles:
-            if not os.path.isdir(baseImageDir + dir):
-                labelTemp = PicLabel()
-                labelTemp.setObjectName(baseImageDir + dir)
-                imageTime = (os.path.getmtime(baseImageDir + dir))
-                if imageTime < sevenDaysAgo:
-                    os.remove(baseImageDir + dir)
-                else:
-                    labelTemp.setPixmap(QPixmap(baseImageDir + dir).scaled(QSize(320 , 180)))
-                    self.pictureLabelList.append(labelTemp)
-        for label in self.pictureLabelList:
-            self.vBoxLayout.addWidget(label)
-        scroll = QScrollArea()
-        self.frame = QFrame(scroll)
-        self.frame.setLayout(self.vBoxLayout)
-        scroll.setWidget(self.frame)
-        #将scroll设置成没有边框
-        scroll.setFrameShape(QFrame.NoFrame)
-        #将scroll设置成横向没有scrollbar
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        #为scrollbar设置style属性
-        self.setScrollBarStyle(scroll)
-        layout = QVBoxLayout()
-        layout.addWidget(scroll)
+        layout = QHBoxLayout()
+        layout.addWidget(self.listPictureView)
+        self.setScrollBarStyle(self.listPictureView)
         #为layout设置margins
         layout.setContentsMargins(QMargins(0 ,0,0,0))
-        self.vBoxLayout.setContentsMargins(QMargins(0 ,0,0,0))
-        self.frame.setContentsMargins(QMargins(5,5,5,5))
         self.setLayout(layout)
 
     #系统右下角图标
@@ -148,31 +167,28 @@ class BingPaperDesktop(QWidget):
 
     #当图片下载完毕会发生的事情
     def downloadEnd(self):
-
-        for label in self.pictureLabelList:
-            self.vBoxLayout.removeWidget(label)
-
         imageFiles = os.listdir(baseImageDirName)
         self.pictureLabelList = []
-        now = datetime.now()
-        sevenDaysAgo = (now - timedelta(days=7)).timestamp()
-        toDay = datetime(now.year , now.month , now.day , 0 , 0 , 0 ,0).timestamp()
         for dir in imageFiles:
             if not os.path.isdir(baseImageDir + dir):
-                labelTemp = PicLabel()
-                labelTemp.setObjectName(baseImageDir + dir)
-                imageTime = (os.path.getmtime(baseImageDir + dir))
-                if imageTime < sevenDaysAgo:
+                if getImageOverNowTime(dir) > 7:
                     os.remove(baseImageDir + dir)
-                elif imageTime - toDay > 0 :
-                    print(toDay , imageTime)
+                else:
+                    labelTemp = PicLabel()
+                    labelTemp.setObjectName(baseImageDir + dir)
                     labelTemp.setPixmap(QPixmap(baseImageDir + dir).scaled(QSize(320 , 180)))
                     self.pictureLabelList.append(labelTemp)
-        # self.vBoxLayout.setGeometry(QRect(self.vBoxLayout.geometry().x() ,self.vBoxLayout.geometry().y() , self.vBoxLayout.geometry().width() , self.vBoxLayout.geometry().height() + 180 ))
-        self.vBoxLayout.addStretch(180)
         for label in self.pictureLabelList:
-            self.vBoxLayout.addWidget(label)
-            
+            item = QStandardItem()
+            self.listPictureView._model.appendRow(item)  # 添加item
+
+            # 得到索引
+            index = self.listPictureView._model.indexFromItem(item)
+            widget = label
+            item.setSizeHint(QSize(330,180))  # 主要是调整item的高度
+            # 设置自定义的widget
+            self.listPictureView.setIndexWidget(index, widget)
+    
     def tryIconQuitClicked(self):
         sys.exit(app.exec_())
 
@@ -201,6 +217,10 @@ if __name__ == "__main__":
     systemInit()
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
+    window.resize(320 , 180)
+    size = QSize(320 , 180)
+    window.setFixedSize(size)
+    # window.setWindowFlags(Qt.FramelessWindowHint)
     window.show()
     sys.exit(app.exec_())
 
