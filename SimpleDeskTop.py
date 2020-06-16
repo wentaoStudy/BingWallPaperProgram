@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-06-16 12:30:46
+@LastEditTime: 2020-06-16 13:21:43
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -56,6 +56,25 @@ class DownThread(QThread):
                 if imageTime - toDay >= 0 :
                     ifDownload = False
         return ifDownload
+
+class ChangeImage(QThread):
+    trigger = pyqtSignal()      #创建信号
+    def __init__(self):
+        super(ChangeImage , self).__init__()
+        self.flag = 1   #自定义变量
+        
+    def run(self):
+        imageFiles = os.listdir(baseImageDirName)
+        count = 0
+        # if self.flag == 1:
+        while self.flag == 1:
+            SetPaper.setWallPaper(baseImageDir + imageFiles[count%len(imageFiles)])
+            count += 1
+            time.sleep(900)
+
+    def stop(self):     #重写stop方法
+        self.flag = 0														# 2.
+        print('线程退出了')
 
 #返回图片是多少天前获取的，例如今天获取的返回0昨天获取的返回1 , 输入值为地址串
 def getImageOverNowTime(string_path):
@@ -121,6 +140,7 @@ class BingPaperDesktop(QWidget):
         self.initUi()
         self.tryIcon()
         self.createDownLoadThread()
+        self.createChangeImageThread()
 
     def initUi(self):
         self.setWindowTitle("Bing壁纸")
@@ -128,7 +148,9 @@ class BingPaperDesktop(QWidget):
         self.setWindowIcon(QIcon("python.png"))
         layout = QVBoxLayout()
         layout.addWidget(self.listPictureView)
-        layout.addWidget(QCheckBox("循环播放壁纸"))
+        self.checkbox_change_image = QCheckBox("循环播放壁纸")
+        self.checkbox_change_image.stateChanged.connect(self.change_image_checkbox_sate_change)
+        layout.addWidget(self.checkbox_change_image)
         layout.addWidget(QCheckBox("允许其他来源图片"))
         layout.addWidget(QPushButton("关闭窗口"))
         self.setScrollBarStyle(self.listPictureView)
@@ -160,6 +182,10 @@ class BingPaperDesktop(QWidget):
         self.downloadThread.start()
         self.downloadThread.end.connect(self.downloadEnd)
 
+    def createChangeImageThread(self):
+        self.changeImageThread = ChangeImage()
+        # self.changeImageThread.start()
+        
     #为控件设置ScrollBar属性
     def setScrollBarStyle(self , widget):
         with open("Data/ScrollBar.qss", "rb") as fp:
@@ -205,6 +231,13 @@ class BingPaperDesktop(QWidget):
     def closeEvent(self, event):
         event.ignore()
         self.tryIconMainWindowHide()
+
+    def change_image_checkbox_sate_change(self):
+        if self.checkbox_change_image.isChecked():
+            self.changeImageThread = ChangeImage()
+            self.changeImageThread.start()
+        else:
+            self.changeImageThread.stop()
 
 def judgeAndCreateDir():
     baseDir = os.getcwd()
