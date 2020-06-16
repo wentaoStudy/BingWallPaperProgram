@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-06-16 13:21:43
+@LastEditTime: 2020-06-17 07:17:48
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -152,7 +152,6 @@ class BingPaperDesktop(QWidget):
         self.checkbox_change_image.stateChanged.connect(self.change_image_checkbox_sate_change)
         layout.addWidget(self.checkbox_change_image)
         layout.addWidget(QCheckBox("允许其他来源图片"))
-        layout.addWidget(QPushButton("关闭窗口"))
         self.setScrollBarStyle(self.listPictureView)
         #为layout设置margins
         layout.setContentsMargins(QMargins(0 ,0,0,0))
