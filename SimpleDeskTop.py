@@ -1,7 +1,7 @@
 '''
 @Author: wentaoStudy
 @Date: 2020-03-17 15:07:30
-@LastEditTime: 2020-06-15 23:36:54
+@LastEditTime: 2020-06-16 12:30:46
 @LastEditors: wentaoStudy
 @Email: 2335844083@qq.com
 '''
@@ -126,8 +126,11 @@ class BingPaperDesktop(QWidget):
         self.setWindowTitle("Bing壁纸")
         #系统图标
         self.setWindowIcon(QIcon("python.png"))
-        layout = QHBoxLayout()
+        layout = QVBoxLayout()
         layout.addWidget(self.listPictureView)
+        layout.addWidget(QCheckBox("循环播放壁纸"))
+        layout.addWidget(QCheckBox("允许其他来源图片"))
+        layout.addWidget(QPushButton("关闭窗口"))
         self.setScrollBarStyle(self.listPictureView)
         #为layout设置margins
         layout.setContentsMargins(QMargins(0 ,0,0,0))
@@ -217,9 +220,9 @@ if __name__ == "__main__":
     systemInit()
     app = QApplication(sys.argv)
     window = BingPaperDesktop()
-    window.resize(320 , 180)
-    size = QSize(320 , 180)
-    window.setFixedSize(size)
+    # window.resize(320 , 180)
+    # size = QSize(320 , )
+    # window.setFixedSize(size)
     # window.setWindowFlags(Qt.FramelessWindowHint)
     window.show()
     sys.exit(app.exec_())
